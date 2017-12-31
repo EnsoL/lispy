@@ -36,11 +36,11 @@ int main(int argc, char** argv){
 
 	/* Defines them */
 	mpca_lang(MPCA_LANG_DEFAULT,
-	"																									\
-		number	   :		/-?[0-9]+/	 												;	\
-	    operator    :    	'+'		|	'-'    |  	'/'		|	'*'	 							;	\
-	    expr			   :    <number> | '(' <operator> <expr>+ ')'		;   \
-	    lispy		   :		/^/ (<operator> <expr>+)? /$/						;	\
+	"																																						\
+		number	   :		/-?[0-9]+(/.<number>)?/	 																			;	\
+	    operator    :    	'+'		|	'add'	|	'-'    |		'sub'		|  	'/'	  |   'div'	|	'*'   |   'mul'   |	'%'			;	\
+	    expr			   :    <number> | '(' <operator> <expr>+ ')'	|	'(' <expr>+ ')'								;   \
+	    lispy		   :		/^/ (<operator> <expr>+)? /$/																		;	\
 		", number, operator, expr, lispy);
 
 	puts("Lispy version 0.0.0.3");
