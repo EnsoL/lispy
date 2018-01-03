@@ -34,14 +34,13 @@ int main(int argc, char** argv){
 	mpc_parser_t* expr         = mpc_new("expr");
 	mpc_parser_t* lispy         = mpc_new("lispy");
 
-	/* Defines them */
-	mpca_lang(MPCA_LANG_DEFAULT,
-	"																																						\
-		number	   :		/-?[0-9]+(/.<number>)?/	 																			;	\
-	    operator    :    	'+'		|	'add'	|	'-'    |		'sub'		|  	'/'	  |   'div'	|	'*'   |   'mul'   |	'%'			;	\
-	    expr			   :    <number> | '(' <operator> <expr>+ ')'	|	'(' <expr>+ ')'								;   \
-	    lispy		   :		/^/ (<operator> <expr>+)? /$/																		;	\
-		", number, operator, expr, lispy);
+mpca_lang(MPCA_LANG_DEFAULT,
+  "                                                     																		\
+    number   : /-?[0-9]+(.[0-9]+)?/ ;                             											\
+    operator  : '+' | \"add\" | '-' | \"sub\" | '*' | \"mul\" | '/' | \"div\" | '%' ;               \
+    expr         : <number> | '(' <operator> <expr>+ ')' ;  											\
+    lispy        : /^/ <operator> <expr>+ /$/ ;             												\
+ ", number, operator, expr, lispy);
 
 	puts("Lispy version 0.0.0.3");
 	puts("Press Ctrl+C to Exit lispy\n");
@@ -53,7 +52,7 @@ int main(int argc, char** argv){
 		// Attempt
 		mpc_result_t r;
 		if	(mpc_parse("<stdin>" , input, lispy, &r))	{
-			// On success, print AST
+			// On success, print abstract syntax tree
 			mpc_ast_print(r.output);
 			mpc_ast_delete(r.output);
 		} else {
