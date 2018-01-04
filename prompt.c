@@ -26,6 +26,43 @@ void add_history(char* unused){}
 #include <editline/history.h>
 #endif
 
+long eval_op(char* op, long x, long y){
+	if(!strcmp(op, "+") | !strcmp(op, "add")) return x + y;
+	if(!strcmp(op, "-") | !strcmp(op, "sub")) return x - y;
+	if(!strcmp(op, "*") | !strcmp(op, "mul")) return x * y;
+	if(!strcmp(op, "/") | !strcmp(op, "div")) return x / y;
+
+	return 0;
+}
+
+// Evaluates expressions, which are either a number or a ( operator expression+ )
+long eval(mpc_ast_t* t){
+	// atoi converts *char to long
+	if(strstr(t->tag, "number")) return atoi(t->contents);
+	
+	char *op = t->children[1]->contents;
+	long x = eval(t->children[2]);
+	// 0 is (, 1 is operation, while the last one is )
+	// the rest are arguments
+	for(int i = 3; strstr(t->children[i]->tag, "expr"); i++){
+		x += eval_op(op, x, eval(t->children[i]));
+	}
+
+	return x;
+}
+
+long numberOfNodes(mpc_ast_t* t){
+	if(t->children_num == 0) return 1;
+	else if(t->children_num >= 0) {
+		long total = 1;
+		for(long i = 0; i < t->children_num; i++){
+			total += numberOfNodes(t->children[i]);		
+		}
+		return total;
+	}
+	else return 0;
+}
+
 int main(int argc, char** argv){
 	char *input;
 	/* Creates some parsers */
