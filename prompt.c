@@ -31,21 +31,29 @@ long eval_op(char* op, long x, long y){
 	if(!strcmp(op, "-") | !strcmp(op, "sub")) return x - y;
 	if(!strcmp(op, "*") | !strcmp(op, "mul")) return x * y;
 	if(!strcmp(op, "/") | !strcmp(op, "div")) return x / y;
+	if(!strcmp(op, "%")) return x % y;
+	if(!strcmp(op, "^")) return pow(x, y);
+	if(!strcmp(op, "min")) return x > y ? y : x ;
+	if(!strcmp(op, "max")) return x > y ? x : y ;
 
 	return 0;
 }
 
 // Evaluates expressions, which are either a number or a ( operator expression+ )
 long eval(mpc_ast_t* t){
-	// atoi converts *char to long
-	if(strstr(t->tag, "number")) return atoi(t->contents);
+	if(strstr(t->tag, "number")) return atoi(t->contents);  // atoi converts *char to long
 	
+	// 0 is '(', 1 is an operation, while the last one is ')'
+	// the rest are arguments
 	char *op = t->children[1]->contents;
 	long x = eval(t->children[2]);
-	// 0 is (, 1 is operation, while the last one is )
-	// the rest are arguments
+	
+	if((*op) == '-'){
+		if(t->children_num == 4) return -x;
+	}
+
 	for(int i = 3; strstr(t->children[i]->tag, "expr"); i++){
-		x += eval_op(op, x, eval(t->children[i]));
+		x = eval_op(op, x, eval(t->children[i]));
 	}
 
 	return x;
@@ -71,12 +79,12 @@ int main(int argc, char** argv){
 	mpc_parser_t* expr         = mpc_new("expr");
 	mpc_parser_t* lispy         = mpc_new("lispy");
 
-mpca_lang(MPCA_LANG_DEFAULT,///-?[0-9]+.?[0-9]*/
-  "                                                     																		\
-    number   : /-?[0-9]+([.,][0-9]+)?/ ;                             										     	\
-    operator  : '+' | \"add\" | '-' | \"sub\" | '*' | \"mul\" | '/' | \"div\" | '%' ;               \
-    expr         : <number> | '(' <operator> <expr>+ ')' ;  											\
-    lispy        : /^/ <operator> <expr>+ /$/ ;             												\
+mpca_lang(MPCA_LANG_DEFAULT, // /-?[0-9]+([.,][0-9]+)?/  -  decimal numbers 
+  "                                                     																										\
+    number   : /-?[0-9]+/ ;                             																	     	\
+    operator  : '+' | \"add\" | '-' | \"sub\" | '*' | \"mul\" | '/' | \"div\" | '%' | '^' | \"min\" | \"max\";			\
+    expr         : <number> | '(' <operator> <expr>+ ')' ;  																			\
+    lispy        : /^/ <operator> <expr>+ /$/ ;             																				\
  ", number, operator, expr, lispy);
 
 	puts("Lispy version 0.0.0.3");
@@ -86,11 +94,11 @@ mpca_lang(MPCA_LANG_DEFAULT,///-?[0-9]+.?[0-9]*/
 		input = readline("> "); //prompt user, and get input
 		add_history(input);
 
-		// Attempt
+		// Attempt to parse
 		mpc_result_t r;
 		if	(mpc_parse("<stdin>" , input, lispy, &r))	{
-			// On success, print abstract syntax tree
-			mpc_ast_print(r.output);
+			long result  = eval(r.output);
+			printf("%ld \n", result);
 			mpc_ast_delete(r.output);
 		} else {
 			// On failure, print error
