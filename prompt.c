@@ -96,7 +96,7 @@ lval eval(mpc_ast_t* t){
 	lval x = eval(t->children[2]);
 	
 	if((*op) == '-'){
-		if(t->children_num == 4) return x.num = -x.num;
+		if(t->children_num == 4) x.num = -x.num;
 	}
 
 	for(int i = 3; strstr(t->children[i]->tag, "expr"); i++){
